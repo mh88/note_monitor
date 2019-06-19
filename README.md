@@ -11,6 +11,7 @@ ffmpeg -re -i '/root/live.mp4' -vcodec copy -acodec copy -f flv 'rtmp://127.0.0.
 
 # LIVEGO
 stream server for rtmp
+
 简单高效的直播服务器 https://github.com/mh88/livego
 
 # FLV.js

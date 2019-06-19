@@ -16,12 +16,16 @@ stream server for rtmp
 
 # FLV.js
 video player plugin for website display
+
 An HTML5 Flash Video (FLV) Player written in pure JavaScript without Flash. LONG LIVE FLV!
+
 https://github.com/bilibili/flv.js
 
 # InsightFace
 a demo of insignface network using mxnet
+
 https://github.com/mh88/insightface_for_face_recognition
 
 office website
+
 https://github.com/deepinsight/insightface

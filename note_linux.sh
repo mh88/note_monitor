@@ -31,9 +31,14 @@ psql
 |-- # crontab -e
 |-- # 每分钟执行一次
 | */1 * * * * /usr/local/bin/clear_log
+|-- # 每天凌晨0点10分执行auto-del-7-days-ago-log.sh文件进行数据清理任务
+| 10 0 * * * /opt/soft/log/auto-del-7-days-ago-log.sh
 |
 |- 保存代码后 ,再执行下面的命令，以保证计划任务的生效
 |-- # /etc/rc.d/init.d/crond restart  
+|
+|- crontab文件格式
+|-- 
 |
 |- 可通过 df -h 查看磁盘使用情况
 |- 通过 du -h --max-depth=1 查看对应目录下文件的资源占用情况

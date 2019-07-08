@@ -38,7 +38,7 @@ psql
 |-- # /etc/rc.d/init.d/crond restart  
 |
 |- crontab文件格式
-|-- 
+|-- [!]
 |
 |- 可通过 df -h 查看磁盘使用情况
 |- 通过 du -h --max-depth=1 查看对应目录下文件的资源占用情况

@@ -247,3 +247,146 @@ class Handler(BaseHandler):
     def on_result(self, result):
         self.car.insert_one(result)
     
+##################################################################
+
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+# Created on 2019-07-11 16:15:36
+# Project: test2
+
+import base64
+import json
+import sys
+import time
+import MySQLdb
+from pyspider.libs.base_handler import *
+reload(sys)
+sys.setdefaultencoding('utf8')
+
+
+class Handler(BaseHandler):
+    
+    
+    
+    crawl_config = {
+    }
+    def __init__(self):
+        self.db = MySQLdb.connect("172.16.7.210", "root", "root", "pyspider_db", charset='utf8' )
+        self.base_url = 'http://url/bzflh/lhmcAction.do?method=queryYgbLhmcList'
+        self.page_num = 1
+        self.total_num = 1
+ 
+    def on_finished(self):
+        if hasattr(self, 'db'):
+            self.db.close()
+            print("close！")
+
+    def save_in_mysql(self, items):
+        try:
+            sql = 'INSERT INTO member(name, identify, huxi, huxiqu, ruhu_time, shebao, wife, fa,ma,parent) \
+          VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
+          
+            sql_all = []
+            for item in items:
+                sql_all.append((item['name'], item['identify'], item['huxi'], item['huxiqu'], item['ruhu_time'], item['shebao'], item['wife'], item['fa'],item['ma'],item['parent']))
+                
+            print(sql_all)
+            
+            cursor = self.db.cursor()
+            cursor.executemany(sql,sql_all)
+        
+            print(cursor.lastrowid)
+            self.db.commit()
+        except Exception as e:
+            print(e)
+            self.db.rollback()
+        
+    @every(seconds=30)
+    def on_start(self):
+        
+            if self.page_num > self.total_num:
+                exit()
+            
+            url = self.base_url + '&page=' + str(self.page_num)
+            print url
+            data = {
+                'pageNumber':self.page_num,
+                'pageSize':10,
+                'waittype':2,
+                'num':0,
+                'start_paix':'',
+                'end_paix':'',
+                'shoulbahzh':'',
+                'xingm':'',
+                'idcard':''
+            }
+            self.page_num += 1
+            self.crawl(url, callback=self.index_page, method='POST', data=data)
+            
+    
+    @config(age=20)    
+    def index_page(self, response):
+        
+        print(response.json)
+        
+        for x in response.json['rows']:
+
+            self.crawl('url/bzflh/lhmcAction.do?method=queryDetailLhc&lhmcId='+x['LHMC_ID']+'&waittype=2', callback=self.detail_page)
+       
+    @config(age=5)  
+    def detail_page(self, response):
+        
+        parent = None
+        r = []
+        for each in response.doc('.leader_wrap1 > div.leader_intro1').filter(lambda i: i > 0).items():
+            each('b').remove()
+            x_map = each.text().split('\n')
+            if parent is None:
+                parent = x_map
+                
+            if parent is None and len(parent) < 2:
+                parent = [' ',' ']
+          
+            if len(x_map) == 5:
+                r.append( {
+                        "name":x_map[0],
+                        "identify": x_map[1],
+                        "huxi": '深圳',
+                        "huxiqu": x_map[2],
+                        "ruhu_time": x_map[3],
+                        "shebao": x_map[4],
+                        "wife": '',
+                        "fa": '',
+                        "ma": '',
+                        "parent":''
+                })
+            if len(x_map) == 4:
+
+                with_ = parent[1] if x_map[0] == '申请人配偶' else ''
+                fa = parent[1] if (x_map[0] == '申请人未成年子女' or x_map[0] == '申请人成年子女') else ''
+                ma = ''
+
+                if len(fa) > 0 and parent[0][0] != x_map[1][0]:
+                    ma = parent[1]
+                    fa = ''
+                r.append( {
+                        "name":x_map[1],
+                        "identify": x_map[2],
+                        "huxi": '深圳',
+                        "huxiqu": parent[2],
+                        "ruhu_time": x_map[3],
+                        "shebao": '',
+                        "wife": with_,
+                        "fa": fa,
+                        "ma": ma,
+                        "parent": parent[0] + ':' + parent[1]
+                })
+        
+        return r
+    
+    def on_result(self, result):
+        
+        #for x in result:
+
+        self.save_in_mysql(result)
+        #self.car.insert_one(result)

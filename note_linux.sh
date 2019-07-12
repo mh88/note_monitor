@@ -7,6 +7,9 @@ psql
 \d              //view tables relations
 \d config       //view table config relations
 
+//
+netstat -tunlp | grep 'listen'
+
 
 //Linux 定时任务 删除指定时间前的文件操作
 |- 新建一个可执行文件

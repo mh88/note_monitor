@@ -332,3 +332,129 @@ class Handler(BaseHandler):
         except Exception as e:
             print(e)
             self.db.rollback()
+
+            
+###########################################################
+
+
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+# Created on 2019-07-15 14:53:02
+# Project: www_kuishow_com
+import re
+from zlib import crc32
+import random
+from base64 import b64decode
+import MySQLdb
+import time
+from pyspider.libs.base_handler import *
+
+
+class Handler(BaseHandler):
+    crawl_config = {
+    }
+    
+    def __init__(self):
+        self.url = 'http://101.251.217.210/rest/n/feed/list?app=0&country_code=CN&ver=4.55&c=HUAWEI_KWAI&mod=HUAWEI(BKL-AL00)&oc=UNKNOWN&appver=4.55.5.4284&language=zh-cn&sys=ANDROID_9&net=WIFI&did=ANDROID_fdde31ab5ee08806&ud=0'
+        
+        self.db = MySQLdb.connect("172.16.7.210", "root", "root", "pyspider_db_www_kuishou_com", charset='utf8' )
+
+
+    @every(seconds=60 * 1)
+    def on_start(self):
+        data = {
+            'type':7,
+            'page':3,
+            'count':20,
+            'pv':'false',
+            'id':13,
+            'pcursor':1,
+            'sig':'ecfca06e784c3371056cbb93c4c4ad03',
+            'client_key':'3c2cd3f3',
+            'os':'android',
+        }
+        url = self.url
+        
+        #self.save_in_log(self.channelId, tick, url)
+        
+        self.crawl(url, callback=self.detail_page, method='POST', data=data)
+
+    @config(age=55 * 1)
+    def index_page(self, response):
+        pass
+
+            
+    @config(age=5)
+    def detail_page(self, response):
+        
+        data = response.json
+        
+        if data['result'] == 1:
+            feeds = data['feeds']
+
+            reg = re.compile(u"[\u4e00-\u9fa5]+")
+            r = []
+            try:
+                for x in feeds:
+                    title = x['caption'].replace('\n','')
+                    name = ' '.join(reg.findall(title))
+                    r.append({
+                        "video_url": x['main_mv_urls'][0]['url'],
+                        "video_url_api": '',
+                        "video_id": x['photo_id'],
+                        "video_show_id":x['photo_id'],
+                        "videoBigImage":x['cover_thumbnail_urls'][0]['url'],
+                        "videoTitle":name,
+                        "videoImage":x['cover_thumbnail_urls'][0]['url'],
+                        "playNum":x['view_count'],
+                        "timeText":x['time'],
+                        "blackText":x['duration'],
+                        "authorName":' '.join(reg.findall(x['user_name'])),
+                        "uid":x['photo_id'],
+                        "maxTime":x['timestamp'],
+                        "video_size":x['ext_params']['video'],
+                        "video_vwidth":x['ext_params']['w'],
+                        "video_vheight":x['ext_params']['h'],
+                        "video_codec_type":'',
+                        "video_vtype":x['ext_params']['mtype'],
+                    })
+            except Exception as e:
+                print(e)
+                pass
+        return r
+    
+    def on_result(self, result):
+        print(result)
+        self.save_in_mysql(result)
+        pass
+
+    def save_in_mysql(self, items):
+        try:
+            sql = 'replace into video_kuishou_1(uid,video_show_id,videoTitle,videoBigImage,videoImage,playNum,timeText,blackText,authorName,maxTime,video_id,video_url,video_url_api,video_size,video_vwidth,video_vheight,video_codec_type,video_vtype) \
+          VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);'
+          
+            sql_all = []
+            for item in items:
+                sql_all.append( (item['uid'],item['video_show_id'],item['videoTitle'],item['videoBigImage'],item['videoImage'],item['playNum'],item['timeText'],item['blackText'],item['authorName'],item['maxTime'],item['video_id'],item['video_url'],item['video_url_api'],item['video_size'],item['video_vwidth'],item['video_vheight'],item['video_codec_type'],item['video_vtype']))
+                
+            cursor = self.db.cursor()
+            cursor.executemany(sql,sql_all)
+        
+            print(cursor.lastrowid)
+            self.db.commit()
+        except Exception as e:
+            print(e)
+            self.db.rollback()
+            
+    def save_in_log(self, channelId, tick, url):
+        try:
+            sql = 'replace into spider_log_kuishou(channelId, tick, url) \
+          VALUES (%s,%s,%s);'
+          
+            cursor = self.db.cursor()
+            cursor.execute(sql,(channelId, tick, url))
+        
+            self.db.commit()
+        except Exception as e:
+            print(e)
+            self.db.rollback()

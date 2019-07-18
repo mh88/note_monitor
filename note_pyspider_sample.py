@@ -520,8 +520,16 @@ class Handler(BaseHandler):
                     title = x['title'].replace('\n','')
                     #name = ''.join(reg.findall(title))
                     title = title if len(title) > 0 else x['share_title'].replace('\n','')
+                    title = ''.join(reg.findall(title))
+                    
+                    video_url = ''
+                    for _url in video['url_list']:
+                        if 'api.huoshan.com' in _url:
+                            video_url = _url
+                            break
+                    
                     r.append({
-                        "video_url": video['url_list'][0],
+                        "video_url": video_url,
                         "video_url_api": '',
                         "video_id": video['video_id'],
                         "video_show_id":video['video_id'],

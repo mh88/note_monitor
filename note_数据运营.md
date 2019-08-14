@@ -74,9 +74,10 @@ App|展示|首页|001
 
 
 
+
 ### Android 埋点方案 
 
-*以下资料由 [Github link](https://github.com/search?o=desc&q=android+无埋点&s=stars&type= Repositories) 查询参考，只选部分，更多资料参考link*
+*以下资料由 [Github link](https://github.com/search?o=desc&q=android+无埋点&s=stars&type=Repositories) 查询参考，只选部分，更多资料参考link*
 
 - ###### [网易有料](https://github.com/NetEaseYouliao) (*可重点研究*)
 

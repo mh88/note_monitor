@@ -127,3 +127,5 @@ App|展示|首页|001
 - [Android无埋点数据采集SDK及Gradle插件开发](https://blog.csdn.net/yyanjun/article/details/80000781)
 
 - [Android无埋点数据收集SDK关键技术](https://www.jianshu.com/p/b5ffe845fe2d)
+
+- [移动端数据收集和分析](https://www.jianshu.com/c/ee326e36f556)

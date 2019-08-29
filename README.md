@@ -36,4 +36,7 @@ A fast reverse proxy to help you expose a local server behind a NAT or firewall 
 https://github.com/fatedier/frp
 
 # Demo
-![](./attachments/monitor_1.png)
+|       |       |       |
+| :---: | ----- | ----- |
+| ![Image1](./attachment/monitor_1.png) | ![Image2](./attachment/monitor_2.png) | ![Image3](./attachment/monitor_3.png) |
+| ![Image4](./attachment/monitor_4.png) | ![Image5](./attachment/monitor_5.png) | ![Image6](./attachment/monitor_6.png) |

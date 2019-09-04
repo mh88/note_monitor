@@ -1,9 +1,9 @@
-#超分辩率
+# 超分辩率
 
-##MMSR
+## MMSR
 MMSR is an open source image and video super-resolution toolbox based on PyTorch
 
 https://github.com/open-mmlab/mmsr
 
-##TecoGAN
+## TecoGAN
 https://github.com/thunil/TecoGAN

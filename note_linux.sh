@@ -150,3 +150,10 @@ case "$1" in
         exit 1
     ;;
 esac
+
+# service myService start        //启动服务
+# service myService stop         //关闭服务
+# service myService restart      //重启服务
+
+# update-rc.d myServicce defaults    //设置服务开机自启（默认条件）
+# update-rc.d -f myService remove    //设置服务删除开机自启

@@ -63,25 +63,26 @@ sudo vim myapp.service
 添加以下配置
 [Unit]
 # 这里添加你的服务描述
-Description=myapp
+Description=livego
 After=syslog.target
 
 [Service]
 # 这里更改为你的用户名
-User=myapp
+User=root
 # 这里路径为你的spring boot工程的jar包路径
-ExecStart=这里是需要执行的命令
-SuccessExitStatus=143
+ExecStart=/usr/local/livego/livego
+WorkingDirectory=/usr/local/livego/
+Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 
 设置为系统服务，开机自启动
 systemctl enable myapp.service
 
 
 Ubuntu 创建自定义服务 并设置开机自启
-# cd /etc/rc.d
+# cd /etc/init.d
 # touch myService
 
 编辑创建的服务脚本，填入以下模板
@@ -101,7 +102,7 @@ start() {
     else
         ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
         $PROG_PATH/$PROG $PROG_ARGS 2>&1 >/var/log/$PROG &
-    $pid=`ps ax | grep -i 'myService' | sed 's/^\([0-9]\{1,\}\).*/\1/g' | head -n 1`
+    $pid=`ps ax | grep -i 'livego' | sed 's/^\([0-9]\{1,\}\).*/\1/g' | head -n 1`
 
         echo "$PROG started"
         echo $pid > "$PID_PATH/$PROG.pid"
@@ -112,7 +113,7 @@ stop() {
     echo "begin stop"
     if [ -e "$PID_PATH/$PROG.pid" ]; then
         ## Program is running, so stop it
-    pid=`ps ax | grep -i 'myService' | sed 's/^\([0-9]\{1,\}\).*/\1/g' | head -n 1`
+    pid=`ps ax | grep -i 'livego' | sed 's/^\([0-9]\{1,\}\).*/\1/g' | head -n 1`
     kill $pid
 
         rm -f  "$PID_PATH/$PROG.pid"
@@ -151,9 +152,9 @@ case "$1" in
     ;;
 esac
 
-# service myService start        //启动服务
-# service myService stop         //关闭服务
-# service myService restart      //重启服务
+# service livego start        //启动服务
+# service livego stop         //关闭服务
+# service livego restart      //重启服务
 
-# update-rc.d myServicce defaults    //设置服务开机自启（默认条件）
-# update-rc.d -f myService remove    //设置服务删除开机自启
+# update-rc.d livego defaults    //设置服务开机自启（默认条件）
+# update-rc.d -f livego remove    //设置服务删除开机自启

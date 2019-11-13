@@ -55,3 +55,98 @@ netstat -tunlp | grep 'listen'
 |
 |- 可通过 df -h 查看磁盘使用情况
 |- 通过 du -h --max-depth=1 查看对应目录下文件的资源占用情况
+
+CentOS 7 - 配置服务实现开机自启动
+cd /etc/systemd/system
+sudo vim myapp.service
+
+添加以下配置
+[Unit]
+# 这里添加你的服务描述
+Description=myapp
+After=syslog.target
+
+[Service]
+# 这里更改为你的用户名
+User=myapp
+# 这里路径为你的spring boot工程的jar包路径
+ExecStart=这里是需要执行的命令
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target
+
+设置为系统服务，开机自启动
+systemctl enable myapp.service
+
+
+Ubuntu 创建自定义服务 并设置开机自启
+# cd /etc/rc.d
+# touch myService
+
+编辑创建的服务脚本，填入以下模板
+#!/bin/bash
+
+## Fill in name of program here.
+PROG="myService"
+PROG_PATH="/usr/local/myServer" ## Not need, but sometimes helpful (if $PROG resides in /opt for example).
+PROG_ARGS="" 
+PID_PATH="/var/run/"
+
+start() {
+    if [ -e "$PID_PATH/$PROG.pid" ]; then
+        ## Program is running, exit with error.
+        echo "Error! $PROG is currently running!" 1>&2
+        exit 1
+    else
+        ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
+        $PROG_PATH/$PROG $PROG_ARGS 2>&1 >/var/log/$PROG &
+    $pid=`ps ax | grep -i 'myService' | sed 's/^\([0-9]\{1,\}\).*/\1/g' | head -n 1`
+
+        echo "$PROG started"
+        echo $pid > "$PID_PATH/$PROG.pid"
+    fi
+}
+
+stop() {
+    echo "begin stop"
+    if [ -e "$PID_PATH/$PROG.pid" ]; then
+        ## Program is running, so stop it
+    pid=`ps ax | grep -i 'myService' | sed 's/^\([0-9]\{1,\}\).*/\1/g' | head -n 1`
+    kill $pid
+
+        rm -f  "$PID_PATH/$PROG.pid"
+        echo "$PROG stopped"
+    else
+        ## Program is not running, exit with error.
+        echo "Error! $PROG not started!" 1>&2
+        exit 1
+    fi
+}
+
+## Check to see if we are running as root first.
+## Found at http://www.cyberciti.biz/tips/shell-root-user-check-script.html
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root" 1>&2
+    exit 1
+fi
+
+case "$1" in
+    start)
+        start
+        exit 0
+    ;;
+    stop)
+        stop
+        exit 0
+    ;;
+    reload|restart|force-reload)
+        stop
+        start
+        exit 0
+    ;;
+    **)
+        echo "Usage: $0 {start|stop|reload}" 1>&2
+        exit 1
+    ;;
+esac
